@@ -11,13 +11,10 @@ const server = express()
 const wss = new SocketServer({ server });
 
 const buildMessage = (message) => {
-  const newMessage = {
-    id: uuidv4(),
-    type: message.type,
-    username: message.username,
-    content: message.content
-  }
-  return newMessage;
+  message = json.parse(message);
+  message.id = uuidv4();
+  message = json.stringify(message);
+  return message;
 }
 
 // Set up a callback that will run when a client connects to the server
@@ -26,9 +23,11 @@ const buildMessage = (message) => {
 wss.on('connection', (ws) => {
   console.log('Client connected');
   ws.onmessage = (event) => {
+    const message = (buildMessage(event.data))
+
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(json.stringify(buildMessage(event.data)));
+        client.send(message);
       }
     })
   };
