@@ -19,24 +19,18 @@ const buildMessage = (message) => {
     case "postMessage":
       message.type = "incomingMessage";
       break;
+    case "initialConnect":
+      message.type = "incomingSystemMessage";
+      message.userNumber = wss.clients.size;
+      break;
   }
   message.id = uuidv4();
   message = JSON.stringify(message);
   return message;
 }
-const sendClients = (clients) => {
-  message =  {
-    type: clientUpdate
-  }
-}
 
 wss.on('connection', (ws) => {
   console.log('Client connected');
-  wss.clients.forEach((client) => {
-    if (client.readyState === ws.OPEN) {
-      client.send(JSON.stringify({ type: "incomingUserNumber", userNumber: wss.clients.size }));
-    }
-  })
   ws.onmessage = (event) => {
     const message = (buildMessage(event.data));
     wss.clients.forEach((client) => {
@@ -47,10 +41,5 @@ wss.on('connection', (ws) => {
   };
   ws.on('close', () => {
     console.log('Client disconnected');
-    wss.clients.forEach((client) => {
-      if (client.readyState === ws.OPEN) {
-        client.send(JSON.stringify({ type: "incomingUserNumber", userNumber: wss.clients.size }));
-      }
-    })
   });
 });
