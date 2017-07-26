@@ -17,6 +17,7 @@ const buildMessage = (message) => {
     username: message.username,
     content: message.content
   }
+  return newMessage;
 }
 
 // Set up a callback that will run when a client connects to the server
@@ -25,9 +26,11 @@ const buildMessage = (message) => {
 wss.on('connection', (ws) => {
   console.log('Client connected');
   ws.onmessage = (event) => {
-    console.log(event.data);
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(json.stringify(buildMessage(event.data)));
+      }
+    })
   };
-
-  // Set up a callback for when a client closes the socket. This usually means they closed their browser.
   ws.on('close', () => console.log('Client disconnected'));
 });
