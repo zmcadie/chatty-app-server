@@ -12,6 +12,7 @@ const wss = new SocketServer({ server });
 
 const buildMessage = (message) => {
   message = JSON.parse(message);
+  (message.type === "postSystemMessage") ? message.type = "incomingSystemMessage" : message.type = "incomingMessage";
   message.id = uuidv4();
   message = JSON.stringify(message);
   return message;
