@@ -12,17 +12,31 @@ const wss = new SocketServer({ server });
 
 const buildMessage = (message) => {
   message = JSON.parse(message);
-  (message.type === "postSystemMessage") ? message.type = "incomingSystemMessage" : message.type = "incomingMessage";
+  switch (message.type) {
+    case "postSystemMessage":
+      message.type = "incomingSystemMessage";
+      break;
+    case "postMessage":
+      message.type = "incomingMessage";
+      break;
+  }
   message.id = uuidv4();
   message = JSON.stringify(message);
   return message;
 }
+const sendClients = (clients) => {
+  message =  {
+    type: clientUpdate
+  }
+}
 
-// Set up a callback that will run when a client connects to the server
-// When a client connects they are assigned a socket, represented by
-// the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
+  wss.clients.forEach((client) => {
+    if (client.readyState === ws.OPEN) {
+      client.send(JSON.stringify({ type: "incomingUserNumber", userNumber: wss.clients.size }));
+    }
+  })
   ws.onmessage = (event) => {
     const message = (buildMessage(event.data));
     wss.clients.forEach((client) => {
