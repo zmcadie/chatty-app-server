@@ -8,9 +8,11 @@ const server = express()
   .use(express.static('public'))
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Server listening on ${ PORT }`));
 
+const colours = ["#FF4136", "#0074D9", "#3D9970", "#B10DC9"];
+
 const wss = new SocketServer({ server });
 
-const buildMessage = (message) => {
+const buildMessage = (message, ws) => {
   message = JSON.parse(message);
   switch (message.type) {
     case "postSystemMessage":
@@ -24,6 +26,8 @@ const buildMessage = (message) => {
       message.userNumber = wss.clients.size;
       break;
   }
+  ws.username = message.username;
+  message.colour = {color: ws.colour};
   message.id = uuidv4();
   message = JSON.stringify(message);
   return message;
@@ -35,13 +39,16 @@ const broadcast = (ws, clients, message) => {
     }
   });
 }
+const assignColour = (ws) => {
+  const num = Math.floor(Math.random() * colours.length);
+  ws.colour = colours[num];
+}
 
 wss.on('connection', (ws) => {
   console.log('Client connected');
+  assignColour(ws);
   ws.onmessage = (event) => {
-    const message = (buildMessage(event.data));
-    // username = JSON.parse(event.data).username;
-    ws.username = JSON.parse(event.data).username;
+    const message = (buildMessage(event.data, ws));
     broadcast(ws, wss.clients, message);
   };
   ws.on("close", () => {
