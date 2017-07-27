@@ -37,16 +37,16 @@ const broadcast = (ws, clients, message) => {
 }
 
 wss.on('connection', (ws) => {
-  let username;
   console.log('Client connected');
   ws.onmessage = (event) => {
     const message = (buildMessage(event.data));
-    username = JSON.parse(event.data).username;
+    // username = JSON.parse(event.data).username;
+    ws.username = JSON.parse(event.data).username;
     broadcast(ws, wss.clients, message);
   };
   ws.on("close", () => {
     console.log('Client disconnected');
-    const message = {id: uuidv4(), type: "incomingSystemMessage", userNumber: wss.clients.size, content: `${username} has left the chat`}
+    const message = {id: uuidv4(), type: "incomingSystemMessage", userNumber: wss.clients.size, content: `${ws.username} has left the chat`}
     broadcast(ws, wss.clients, JSON.stringify(message))
   });
 });
