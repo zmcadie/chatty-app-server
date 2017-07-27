@@ -25,6 +25,11 @@ const buildMessage = (message, ws) => {
       message.type = "incomingSystemMessage";
       message.userNumber = wss.clients.size;
       break;
+    case "postImageMessage":
+      message.imageUrl = message.content.match(/https?:\/\/.*\.(png|jpe?g|gif)/);
+      message.content = message.content.replace(/https?:\/\/.*\.(png|jpe?g|gif)/, "");
+      message.type = "incomingImageMessage";
+      break;
   }
   ws.username = message.username;
   message.colour = {color: ws.colour};
